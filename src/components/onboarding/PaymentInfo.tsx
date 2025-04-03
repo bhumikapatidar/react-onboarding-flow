@@ -17,6 +17,17 @@ export const PaymentInfo = () => {
         /^(0[1-9]|1[0-2])\/?([0-9]{2})$/,
         "Expiry date must be in MM/YY format"
       )
+      .test("valid-date", "Card is expired", function (value) {
+        if (!value) return false;
+
+        const [month, year] = value.split("/").map(Number);
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+
+        if (year < currentYear) return false;
+        if (year === currentYear && month < currentMonth) return false;
+        return true;
+      })
       .required("Required"),
     cvv: Yup.string()
       .matches(/^\d{3}$/, "CVV must be exactly 3 digits")
@@ -40,7 +51,7 @@ export const PaymentInfo = () => {
               <div className="input-group">
                 <Field
                   name="cardNumber"
-                  placeholder="Card Number"
+                  placeholder="Card Number *"
                   className="input-field"
                 />
                 <ErrorMessage
@@ -53,7 +64,7 @@ export const PaymentInfo = () => {
               <div className="input-group">
                 <Field
                   name="expiryDate"
-                  placeholder="MM/YY"
+                  placeholder="MM/YY *"
                   className="input-field"
                 />
                 <ErrorMessage
@@ -64,7 +75,7 @@ export const PaymentInfo = () => {
               </div>
 
               <div className="input-group">
-                <Field name="cvv" placeholder="CVV" className="input-field" />
+                <Field name="cvv" placeholder="CVV *" className="input-field" />
                 <ErrorMessage
                   name="cvv"
                   component="div"

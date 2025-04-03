@@ -35,7 +35,7 @@ export const FavoriteSongs = () => {
                       <div className="input-wrapper">
                         <Field
                           name={`songs.${index}`}
-                          placeholder="Song Name"
+                          placeholder="Song Name *"
                           className="input-field"
                         />
                         <ErrorMessage

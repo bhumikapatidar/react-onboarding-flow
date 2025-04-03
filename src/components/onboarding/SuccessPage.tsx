@@ -6,9 +6,10 @@ export const SuccessPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    localStorage.setItem("onboardingCompleted", "true");
+
     const timer = setTimeout(() => {
-      localStorage.setItem("onboardingCompleted", "true");
-      navigate("/home");
+      navigate("/home", { replace: true });
     }, 3000);
 
     return () => clearTimeout(timer);
