@@ -5,7 +5,6 @@ import { PersonalProfile } from "../components/onboarding/PersonalProfile";
 import { FavoriteSongs } from "../components/onboarding/FavoriteSongs";
 import { PaymentInfo } from "../components/onboarding/PaymentInfo";
 import { SuccessPage } from "../components/onboarding/SuccessPage";
-import OnboardingNavigation from "../components/onboarding/OnboardingNavigation";
 
 export const Onboarding = () => {
   const step = useSelector((state: RootState) => state.onboarding.step);
@@ -19,7 +18,6 @@ export const Onboarding = () => {
         {step === 3 && <PaymentInfo />}
         {step === 4 && <SuccessPage />}
       </div>
-      {step < 4 && <OnboardingNavigation />}
     </div>
   );
 };

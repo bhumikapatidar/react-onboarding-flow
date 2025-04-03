@@ -1,19 +1,21 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { nextStep, prevStep } from "../../redux/onboardingSlice";
+import { prevStep } from "../../redux/onboardingSlice";
 import { RootState } from "../../redux/store";
 
-const OnboardingNavigation: React.FC = () => {
+interface OnboardingNavigationProps {
+  isNextDisabled: boolean;
+  onNext: () => void;
+}
+
+const OnboardingNavigation: React.FC<OnboardingNavigationProps> = ({
+  isNextDisabled,
+  onNext,
+}) => {
   const dispatch = useDispatch();
   const step = useSelector((state: RootState) => state.onboarding.step);
 
   const totalSteps = 4;
-
-  const handleNext = () => {
-    if (step < totalSteps) {
-      dispatch(nextStep());
-    }
-  };
 
   const handleBack = () => {
     if (step > 1) {
@@ -29,12 +31,12 @@ const OnboardingNavigation: React.FC = () => {
         </button>
       )}
       {step < totalSteps ? (
-        <button className="next-btn" onClick={handleNext}>
+        <button className="next-btn" onClick={onNext} disabled={isNextDisabled}>
           Next
         </button>
       ) : (
         <button className="finish-btn" onClick={() => console.log("Finish")}>
-          Finish
+          Submit
         </button>
       )}
     </div>
