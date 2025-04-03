@@ -1,53 +1,12 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { useDispatch, useSelector } from "react-redux";
-import { nextStep, setPaymentInfo } from "../../redux/onboardingSlice";
-import { RootState } from "../../redux/store";
 import "../../styles/Onboarding.css";
 import OnboardingNavigation from "./OnboardingNavigation";
-import { useNavigate } from "react-router-dom";
+import { usePaymentInfo } from "../../hooks/usePaymentInfo";
 
-export const PaymentInfo = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { paymentInfo } = useSelector((state: RootState) => state.onboarding);
-
-  const validationSchema = Yup.object({
-    cardNumber: Yup.string()
-      .matches(/^\d{16}$/, "Card number must be exactly 16 digits")
-      .required("Required"),
-    expiryDate: Yup.string()
-      .matches(
-        /^(0[1-9]|1[0-2])\/?([0-9]{2})$/,
-        "Expiry date must be in MM/YY format"
-      )
-      .test("valid-date", "Card is expired", function (value) {
-        if (!value) return false;
-
-        const [month, year] = value.split("/").map(Number);
-        const currentYear = new Date().getFullYear() % 100;
-        const currentMonth = new Date().getMonth() + 1;
-
-        if (year < currentYear) return false;
-        if (year === currentYear && month < currentMonth) return false;
-        return true;
-      })
-      .required("Required"),
-    cvv: Yup.string()
-      .matches(/^\d{3}$/, "CVV must be exactly 3 digits")
-      .required("Required"),
-  });
-
-  const initialValues = {
-    cardNumber: paymentInfo.cardNumber || "",
-    expiryDate: paymentInfo.expiryDate || "",
-    cvv: paymentInfo.cvv || "",
-  };
-
-  const savePaymentInfo = (values: any) => {
-    dispatch(setPaymentInfo(values));
-  };
+export const PaymentInfo: React.FC = () => {
+  const { initialValues, validationSchema, handleFieldChange, handleSubmit } =
+    usePaymentInfo();
 
   return (
     <div className="onboarding-container">
@@ -56,16 +15,11 @@ export const PaymentInfo = () => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
-            savePaymentInfo(values);
-            dispatch(nextStep());
-            navigate("/success");
-          }}
+          onSubmit={handleSubmit}
           enableReinitialize={true}
         >
           {({ values, isValid, handleSubmit, dirty, setFieldValue }) => {
-            const isFormFilled =
-              values.cardNumber && values.expiryDate && values.cvv;
+            const isFormFilled = Object.values(values).every(Boolean);
 
             return (
               <Form className="form">
@@ -75,11 +29,12 @@ export const PaymentInfo = () => {
                     placeholder="Card Number *"
                     className="input-field"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setFieldValue("cardNumber", e.target.value);
-                      savePaymentInfo({
-                        ...values,
-                        cardNumber: e.target.value,
-                      });
+                      handleFieldChange(
+                        "cardNumber",
+                        e.target.value,
+                        values,
+                        setFieldValue
+                      );
                     }}
                   />
                   <ErrorMessage
@@ -95,11 +50,12 @@ export const PaymentInfo = () => {
                     placeholder="MM/YY *"
                     className="input-field"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setFieldValue("expiryDate", e.target.value);
-                      savePaymentInfo({
-                        ...values,
-                        expiryDate: e.target.value,
-                      });
+                      handleFieldChange(
+                        "expiryDate",
+                        e.target.value,
+                        values,
+                        setFieldValue
+                      );
                     }}
                   />
                   <ErrorMessage
@@ -112,12 +68,16 @@ export const PaymentInfo = () => {
                 <div className="input-group">
                   <Field
                     name="cvv"
-                    maxLength={3}
                     placeholder="CVV *"
                     className="input-field"
+                    maxLength={3}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setFieldValue("cvv", e.target.value);
-                      savePaymentInfo({ ...values, cvv: e.target.value });
+                      handleFieldChange(
+                        "cvv",
+                        e.target.value,
+                        values,
+                        setFieldValue
+                      );
                     }}
                   />
                   <ErrorMessage

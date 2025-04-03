@@ -1,54 +1,17 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { useDispatch, useSelector } from "react-redux";
-import { nextStep, setPersonalInfo } from "../../redux/onboardingSlice";
-import { RootState } from "../../redux/store";
 import "../../styles/Onboarding.css";
 import OnboardingNavigation from "./OnboardingNavigation";
-import { useState, useEffect } from "react";
+import { usePersonalProfile } from "../../hooks/usePersonalProfile";
 
 export const PersonalProfile = () => {
-  const dispatch = useDispatch();
-  const [profilePic, setProfilePic] = useState<string | null>(null);
-  const { personalInfo } = useSelector((state: RootState) => state.onboarding);
-
-  useEffect(() => {
-    if (personalInfo.profilePicture) {
-      setProfilePic(personalInfo.profilePicture);
-    }
-  }, [personalInfo.profilePicture]);
-
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Required"),
-    age: Yup.number()
-      .required("Required")
-      .positive("Age must be positive")
-      .integer("Age must be an integer"),
-    email: Yup.string().email("Invalid email").required("Required"),
-  });
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setProfilePic(base64String);
-        saveFormData({ ...personalInfo, profilePicture: base64String });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Function to save form data to Redux
-  const saveFormData = (values: any) => {
-    dispatch(
-      setPersonalInfo({
-        ...values,
-        profilePicture: profilePic || values.profilePicture,
-      })
-    );
-  };
+  const {
+    personalInfo,
+    profilePic,
+    validationSchema,
+    handleImageUpload,
+    handleFieldChange,
+    handleSubmit,
+  } = usePersonalProfile();
 
   return (
     <div className="onboarding-container">
@@ -57,10 +20,7 @@ export const PersonalProfile = () => {
         <Formik
           initialValues={personalInfo}
           validationSchema={validationSchema}
-          onSubmit={(values) => {
-            saveFormData(values);
-            dispatch(nextStep());
-          }}
+          onSubmit={handleSubmit}
         >
           {({ values, isValid, handleSubmit, setFieldValue }) => (
             <Form className="form">
@@ -69,10 +29,14 @@ export const PersonalProfile = () => {
                   name="name"
                   placeholder="Name *"
                   className="input-field"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setFieldValue("name", e.target.value);
-                    saveFormData({ ...values, name: e.target.value });
-                  }}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleFieldChange(
+                      "name",
+                      e.target.value,
+                      setFieldValue,
+                      values
+                    )
+                  }
                 />
                 <ErrorMessage
                   name="name"
@@ -87,10 +51,14 @@ export const PersonalProfile = () => {
                   type="number"
                   placeholder="Age *"
                   className="input-field"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setFieldValue("age", e.target.value);
-                    saveFormData({ ...values, age: e.target.value });
-                  }}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleFieldChange(
+                      "age",
+                      e.target.value,
+                      setFieldValue,
+                      values
+                    )
+                  }
                 />
                 <ErrorMessage
                   name="age"
@@ -105,10 +73,14 @@ export const PersonalProfile = () => {
                   type="email"
                   placeholder="Email *"
                   className="input-field"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setFieldValue("email", e.target.value);
-                    saveFormData({ ...values, email: e.target.value });
-                  }}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleFieldChange(
+                      "email",
+                      e.target.value,
+                      setFieldValue,
+                      values
+                    )
+                  }
                 />
                 <ErrorMessage
                   name="email"
@@ -116,6 +88,7 @@ export const PersonalProfile = () => {
                   className="error-text"
                 />
               </div>
+
               <div className="profile-upload">
                 <label htmlFor="profile-upload-input" className="upload-label">
                   {profilePic ? (
@@ -134,11 +107,7 @@ export const PersonalProfile = () => {
                   type="file"
                   id="profile-upload-input"
                   accept="image/*"
-                  onChange={(e) => {
-                    handleImageUpload(e);
-                    // We'll save the profile picture after it's converted to base64
-                    // The saveFormData will be called in the reader.onloadend callback
-                  }}
+                  onChange={handleImageUpload}
                   className="hidden-file-input"
                 />
                 <ErrorMessage
@@ -147,6 +116,7 @@ export const PersonalProfile = () => {
                   className="error-text"
                 />
               </div>
+
               <OnboardingNavigation
                 isNextDisabled={
                   !isValid ||

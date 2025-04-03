@@ -1,30 +1,12 @@
-import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { useDispatch, useSelector } from "react-redux";
-import { nextStep, setFavoriteSongs } from "../../redux/onboardingSlice";
-import { RootState } from "../../redux/store";
+import { Formik, Form, FieldArray } from "formik";
 import "../../styles/Onboarding.css";
 import OnboardingNavigation from "./OnboardingNavigation";
+import { useFavoriteSongs } from "../../hooks/useFavoriteSongs";
+import { SongInput } from "./SongInput";
 
 export const FavoriteSongs = () => {
-  const dispatch = useDispatch();
-  const { favoriteSongs } = useSelector((state: RootState) => state.onboarding);
-
-  const validationSchema = Yup.object({
-    songs: Yup.array()
-      .of(Yup.string().required("Required"))
-      .min(1, "At least one song is required"),
-  });
-
-  const initialValues = {
-    songs: favoriteSongs.length ? favoriteSongs : [""],
-  };
-
-  // Function to save songs to Redux
-  const saveSongs = (songs: string[]) => {
-    const nonEmptySongs = songs.filter((song) => song.trim() !== "");
-    dispatch(setFavoriteSongs(nonEmptySongs));
-  };
+  const { initialValues, handleSubmit, handleSaveSongs, validationSchema } =
+    useFavoriteSongs();
 
   return (
     <div className="onboarding-container">
@@ -32,13 +14,7 @@ export const FavoriteSongs = () => {
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={(values) => {
-          const nonEmptySongs = values.songs.filter(
-            (song) => song.trim() !== ""
-          );
-          dispatch(setFavoriteSongs(nonEmptySongs));
-          dispatch(nextStep());
-        }}
+        onSubmit={handleSubmit}
       >
         {({ values, handleSubmit, setFieldValue }) => {
           const hasValidSongs = values.songs.some((song) => song.trim() !== "");
@@ -49,49 +25,21 @@ export const FavoriteSongs = () => {
                 {({ push, remove }) => (
                   <div className="songs-list">
                     {values.songs.map((_, index) => (
-                      <div className="input-group" key={index}>
-                        <div className="input-wrapper">
-                          <Field
-                            name={`songs.${index}`}
-                            placeholder="Song Name *"
-                            className="input-field"
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => {
-                              setFieldValue(`songs.${index}`, e.target.value);
-                              const updatedSongs = [...values.songs];
-                              updatedSongs[index] = e.target.value;
-                              saveSongs(updatedSongs);
-                            }}
-                          />
-                          <ErrorMessage
-                            name={`songs.${index}`}
-                            component="div"
-                            className="error-text"
-                          />
-                          {values.songs.length > 1 && (
-                            <button
-                              type="button"
-                              className="small-btn-remove"
-                              onClick={() => {
-                                remove(index);
-                                const updatedSongs = [...values.songs];
-                                updatedSongs.splice(index, 1);
-                                saveSongs(updatedSongs);
-                              }}
-                            >
-                              ✖
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      <SongInput
+                        key={index}
+                        index={index}
+                        values={values}
+                        setFieldValue={setFieldValue}
+                        remove={remove}
+                        handleSaveSongs={handleSaveSongs}
+                      />
                     ))}
                     <button
                       type="button"
                       className="btn-add"
                       onClick={() => {
                         push("");
-                        saveSongs([...values.songs, ""]);
+                        handleSaveSongs([...values.songs, ""]);
                       }}
                     >
                       + Add Song

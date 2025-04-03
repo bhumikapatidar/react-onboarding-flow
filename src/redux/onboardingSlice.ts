@@ -1,43 +1,57 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+interface PersonalInfo {
+  name: string;
+  age: string;
+  email: string;
+  profilePicture: string;
+}
+
+interface PaymentInfo {
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+}
+
 interface OnboardingState {
   step: number;
   isCompleted: boolean;
-  personalInfo: {
-    name: string;
-    age: string;
-    email: string;
-    profilePicture: string;
-  };
+  personalInfo: PersonalInfo;
   favoriteSongs: string[];
-  paymentInfo: {
-    cardNumber: string;
-    expiryDate: string;
-    cvv: string;
-  };
+  paymentInfo: PaymentInfo;
 }
+
+const STORAGE_KEYS = {
+  ONBOARDING_STATE: "onboardingState",
+  ONBOARDING_COMPLETED: "onboardingCompleted",
+};
+
+const defaultState: OnboardingState = {
+  step: 1,
+  isCompleted: false,
+  personalInfo: { name: "", age: "", email: "", profilePicture: "" },
+  favoriteSongs: [],
+  paymentInfo: { cardNumber: "", expiryDate: "", cvv: "" },
+};
 
 const loadState = (): OnboardingState => {
   try {
-    const serializedState = localStorage.getItem("onboardingState");
+    const serializedState = localStorage.getItem(STORAGE_KEYS.ONBOARDING_STATE);
     if (serializedState === null) {
-      return {
-        step: 1,
-        isCompleted: false,
-        personalInfo: { name: "", age: "", email: "", profilePicture: "" },
-        favoriteSongs: [],
-        paymentInfo: { cardNumber: "", expiryDate: "", cvv: "" },
-      };
+      return defaultState;
     }
     return JSON.parse(serializedState);
   } catch (err) {
-    return {
-      step: 1,
-      isCompleted: false,
-      personalInfo: { name: "", age: "", email: "", profilePicture: "" },
-      favoriteSongs: [],
-      paymentInfo: { cardNumber: "", expiryDate: "", cvv: "" },
-    };
+    console.error("Error loading onboarding state from localStorage:", err);
+    return defaultState;
+  }
+};
+
+const saveStateToLocalStorage = (state: OnboardingState): void => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.ONBOARDING_STATE, JSON.stringify(state));
+  } catch (err) {
+    console.error("Error saving onboarding state to localStorage:", err);
   }
 };
 
@@ -49,45 +63,33 @@ const onboardingSlice = createSlice({
   reducers: {
     nextStep: (state) => {
       state.step += 1;
-      localStorage.setItem("onboardingState", JSON.stringify(state));
+      saveStateToLocalStorage(state);
     },
     prevStep: (state) => {
       state.step -= 1;
-      localStorage.setItem("onboardingState", JSON.stringify(state));
+      saveStateToLocalStorage(state);
     },
-    setPersonalInfo: (
-      state,
-      action: PayloadAction<OnboardingState["personalInfo"]>
-    ) => {
+    setPersonalInfo: (state, action: PayloadAction<PersonalInfo>) => {
       state.personalInfo = action.payload;
-      localStorage.setItem("onboardingState", JSON.stringify(state));
+      saveStateToLocalStorage(state);
     },
     setFavoriteSongs: (state, action: PayloadAction<string[]>) => {
       state.favoriteSongs = action.payload;
-      localStorage.setItem("onboardingState", JSON.stringify(state));
+      saveStateToLocalStorage(state);
     },
-    setPaymentInfo: (
-      state,
-      action: PayloadAction<OnboardingState["paymentInfo"]>
-    ) => {
+    setPaymentInfo: (state, action: PayloadAction<PaymentInfo>) => {
       state.paymentInfo = action.payload;
-      localStorage.setItem("onboardingState", JSON.stringify(state));
+      saveStateToLocalStorage(state);
     },
     completeOnboarding: (state) => {
       state.isCompleted = true;
-      localStorage.setItem("onboardingCompleted", "true");
-      localStorage.setItem("onboardingState", JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, "true");
+      saveStateToLocalStorage(state);
     },
     resetOnboarding: () => {
-      localStorage.removeItem("onboardingState");
-      localStorage.removeItem("onboardingCompleted");
-      return {
-        step: 1,
-        isCompleted: false,
-        personalInfo: { name: "", age: "", email: "", profilePicture: "" },
-        favoriteSongs: [],
-        paymentInfo: { cardNumber: "", expiryDate: "", cvv: "" },
-      };
+      localStorage.removeItem(STORAGE_KEYS.ONBOARDING_STATE);
+      localStorage.removeItem(STORAGE_KEYS.ONBOARDING_COMPLETED);
+      return defaultState;
     },
   },
 });
