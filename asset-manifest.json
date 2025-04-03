@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/react-onboarding-flow/static/css/main.9a74c471.css",
+    "main.js": "/react-onboarding-flow/static/js/main.10f31445.js",
+    "index.html": "/react-onboarding-flow/index.html",
+    "main.9a74c471.css.map": "/react-onboarding-flow/static/css/main.9a74c471.css.map",
+    "main.10f31445.js.map": "/react-onboarding-flow/static/js/main.10f31445.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9a74c471.css",
+    "static/js/main.10f31445.js"
+  ]
+}
