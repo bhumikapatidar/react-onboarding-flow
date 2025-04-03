@@ -241,6 +241,7 @@
   align-items: center;
   flex-direction: column;
   position: relative;
+  padding-bottom: 18px;
 }
 
 .small-btn-remove {
@@ -253,7 +254,7 @@
   border-radius: 50%;
   position: absolute;
   right: 8px;
-  top: 50%;
+  top: 30%;
   transform: translateY(-50%);
   height: 24px;
   width: 24px;

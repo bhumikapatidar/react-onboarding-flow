@@ -8,11 +8,16 @@ import { Login } from "./pages/Login";
 import { Onboarding } from "./pages/Onboarding";
 import { Home } from "./pages/Home";
 import { SuccessPage } from "./components/onboarding/SuccessPage";
-
-const isOnboardingCompleted = () =>
-  localStorage.getItem("onboardingCompleted") === "true";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "./redux/store";
+import { completeOnboarding } from "./redux/onboardingSlice";
 
 const RoutesConfig = () => {
+  const dispatch = useDispatch();
+  const { isCompleted, step } = useSelector(
+    (state: RootState) => state.onboarding
+  );
+
   return (
     <Router>
       <Routes>
@@ -20,33 +25,20 @@ const RoutesConfig = () => {
         <Route
           path="/onboarding/*"
           element={
-            isOnboardingCompleted() ? (
-              <Navigate to="/home" replace />
-            ) : (
-              <Onboarding />
-            )
+            isCompleted ? <Navigate to="/home" replace /> : <Onboarding />
           }
         />
         <Route
           path="/success"
           element={
-            isOnboardingCompleted() ? (
-              <Navigate to="/home" replace />
-            ) : (
-              <SuccessPage />
-            )
+            <SuccessPage onComplete={() => dispatch(completeOnboarding())} />
           }
         />
-
         <Route path="/home" element={<Home />} />
         <Route
           path="*"
           element={
-            isOnboardingCompleted() ? (
-              <Navigate to="/home" replace />
-            ) : (
-              <Navigate to="/" />
-            )
+            isCompleted ? <Navigate to="/home" replace /> : <Navigate to="/" />
           }
         />
       </Routes>

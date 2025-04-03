@@ -1,19 +1,26 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Onboarding.css";
+import { useDispatch } from "react-redux";
+import { completeOnboarding } from "../../redux/onboardingSlice";
 
-export const SuccessPage = () => {
+interface SuccessPageProps {
+  onComplete: () => void;
+}
+
+export const SuccessPage = ({ onComplete }: SuccessPageProps) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    localStorage.setItem("onboardingCompleted", "true");
-
+    onComplete();
+    dispatch(completeOnboarding());
     const timer = setTimeout(() => {
       navigate("/home", { replace: true });
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, onComplete, dispatch]);
 
   return (
     <div className="successContainer">

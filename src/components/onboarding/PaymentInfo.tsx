@@ -1,13 +1,18 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { nextStep, setPaymentInfo } from "../../redux/onboardingSlice";
+import { RootState } from "../../redux/store";
 import "../../styles/Onboarding.css";
 import OnboardingNavigation from "./OnboardingNavigation";
+import { useNavigate } from "react-router-dom";
 
 export const PaymentInfo = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { paymentInfo } = useSelector((state: RootState) => state.onboarding);
+
   const validationSchema = Yup.object({
     cardNumber: Yup.string()
       .matches(/^\d{16}$/, "Card number must be exactly 16 digits")
@@ -34,61 +39,101 @@ export const PaymentInfo = () => {
       .required("Required"),
   });
 
+  const initialValues = {
+    cardNumber: paymentInfo.cardNumber || "",
+    expiryDate: paymentInfo.expiryDate || "",
+    cvv: paymentInfo.cvv || "",
+  };
+
+  const savePaymentInfo = (values: any) => {
+    dispatch(setPaymentInfo(values));
+  };
+
   return (
     <div className="onboarding-container">
       <h2 className="onboarding-title">Payment Information</h2>
       <div className="onboarding-form-content">
         <Formik
-          initialValues={{ cardNumber: "", expiryDate: "", cvv: "" }}
+          initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={(values) => {
-            dispatch(setPaymentInfo(values));
+            savePaymentInfo(values);
             dispatch(nextStep());
+            navigate("/success");
           }}
+          enableReinitialize={true}
         >
-          {({ isValid, handleSubmit, dirty }) => (
-            <Form className="form">
-              <div className="input-group">
-                <Field
-                  name="cardNumber"
-                  placeholder="Card Number *"
-                  className="input-field"
-                />
-                <ErrorMessage
-                  name="cardNumber"
-                  component="div"
-                  className="error-text"
-                />
-              </div>
+          {({ values, isValid, handleSubmit, dirty, setFieldValue }) => {
+            const isFormFilled =
+              values.cardNumber && values.expiryDate && values.cvv;
 
-              <div className="input-group">
-                <Field
-                  name="expiryDate"
-                  placeholder="MM/YY *"
-                  className="input-field"
-                />
-                <ErrorMessage
-                  name="expiryDate"
-                  component="div"
-                  className="error-text"
-                />
-              </div>
+            return (
+              <Form className="form">
+                <div className="input-group">
+                  <Field
+                    name="cardNumber"
+                    placeholder="Card Number *"
+                    className="input-field"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setFieldValue("cardNumber", e.target.value);
+                      savePaymentInfo({
+                        ...values,
+                        cardNumber: e.target.value,
+                      });
+                    }}
+                  />
+                  <ErrorMessage
+                    name="cardNumber"
+                    component="div"
+                    className="error-text"
+                  />
+                </div>
 
-              <div className="input-group">
-                <Field name="cvv" placeholder="CVV *" className="input-field" />
-                <ErrorMessage
-                  name="cvv"
-                  component="div"
-                  className="error-text"
-                />
-              </div>
+                <div className="input-group">
+                  <Field
+                    name="expiryDate"
+                    placeholder="MM/YY *"
+                    className="input-field"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setFieldValue("expiryDate", e.target.value);
+                      savePaymentInfo({
+                        ...values,
+                        expiryDate: e.target.value,
+                      });
+                    }}
+                  />
+                  <ErrorMessage
+                    name="expiryDate"
+                    component="div"
+                    className="error-text"
+                  />
+                </div>
 
-              <OnboardingNavigation
-                isNextDisabled={!(isValid && dirty)}
-                onNext={handleSubmit}
-              />
-            </Form>
-          )}
+                <div className="input-group">
+                  <Field
+                    name="cvv"
+                    maxLength={3}
+                    placeholder="CVV *"
+                    className="input-field"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setFieldValue("cvv", e.target.value);
+                      savePaymentInfo({ ...values, cvv: e.target.value });
+                    }}
+                  />
+                  <ErrorMessage
+                    name="cvv"
+                    component="div"
+                    className="error-text"
+                  />
+                </div>
+
+                <OnboardingNavigation
+                  isNextDisabled={!(isValid && (dirty || isFormFilled))}
+                  onNext={handleSubmit}
+                />
+              </Form>
+            );
+          }}
         </Formik>
       </div>
     </div>
