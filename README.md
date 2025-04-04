@@ -49,11 +49,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
 ### `npm run build`
 
 Builds the app for production to the `build` folder.\
@@ -73,8 +68,12 @@ It correctly bundles React in production mode and optimizes the build for the be
 ```
 src/
 ├── components/     # Reusable UI components
+├── hooks/         # Custom React hooks
 ├── pages/         # Page components
-├── store/         # Redux store configuration
-├── types/         # TypeScript type definitions
-└── App.tsx        # Main application component
+├── redux/         # Redux store and slices
+├── styles/        # Global styles and CSS
+├── App.tsx        # Main application component
+├── index.tsx      # Application entry point
+├── routes.tsx     # Application routing configuration
+└── setupTests.ts  # Test setup configuration
 ```
